@@ -18,86 +18,209 @@
 	let isAuthenticated = $derived($authStore.isAuthenticated);
 	let remainingQueries = $derived(authStore.remainingQueries());
 	
-	// REAL 2024 SEASON DATA (Week 14)
+	// COMPREHENSIVE DEMO DATA - Multiple charts per response
 	const DEMO_RESPONSES: Record<string, AnalyzeResponse> = {
 		'Compare Patrick Mahomes and Josh Allen EPA per play this season': {
-			headline: 'QB EPA Rankings: Allen Leads League',
-			summary: `<p><strong>Josh Allen</strong> leads all QBs in adjusted EPA/play through Week 14, with <strong>Lamar Jackson</strong> ~0.02 behind. Week 14 saw Allen gain <span class="positive">+28.3</span> adjusted EPA.</p>
-			<p>Big risers in Week 14: Matthew Stafford <span class="positive">(+19.6)</span>, Brock Purdy <span class="positive">(+18.5)</span>, Sam Darnold <span class="positive">(+16.8)</span>.</p>
-			<p><em>Data: nflfastR via unexpectedpoints.com, Week 14 2024</em></p>`,
-			chart: {
-				type: 'dot',
-				xLabel: 'Quarterback',
-				yLabel: 'Adjusted EPA/Play',
-				data: [
-					{ name: 'J. Allen', value: 0.31 },
-					{ name: 'L. Jackson', value: 0.29 },
-					{ name: 'J. Love', value: 0.24 },
-					{ name: 'J. Goff', value: 0.21 },
-					{ name: 'B. Purdy', value: 0.19 },
-					{ name: 'S. Darnold', value: 0.17 },
-					{ name: 'M. Stafford', value: 0.15 },
-					{ name: 'P. Mahomes', value: 0.14 },
-					{ name: 'T. Tagovailoa', value: 0.11 },
-					{ name: 'K. Murray', value: 0.05 },
-					{ name: 'A. O\'Connell', value: -0.08 },
-					{ name: 'W. Levis', value: -0.15 }
-				]
-			}
+			headline: 'Mahomes vs Allen: A Deep Dive into QB Efficiency',
+			summary: `<p>While <strong>Josh Allen</strong> leads overall EPA/play at <span class="positive">+0.31</span>, the comparison with <strong>Patrick Mahomes</strong> (<span class="positive">+0.14</span>) requires context across multiple dimensions.</p>`,
+			insights: [
+				'Allen leads in raw EPA but Mahomes has better EPA in high-leverage situations',
+				'Allen has faced easier defensive schedules on average',
+				'Mahomes shows more consistency week-to-week with lower variance'
+			],
+			charts: [
+				{
+					type: 'dot',
+					title: 'Overall EPA/Play Rankings',
+					xLabel: 'Quarterback',
+					yLabel: 'EPA/Play',
+					data: [
+						{ name: 'J. Allen', value: 0.31 },
+						{ name: 'L. Jackson', value: 0.29 },
+						{ name: 'J. Love', value: 0.24 },
+						{ name: 'J. Goff', value: 0.21 },
+						{ name: 'B. Purdy', value: 0.19 },
+						{ name: 'S. Darnold', value: 0.17 },
+						{ name: 'P. Mahomes', value: 0.14 },
+						{ name: 'T. Tagovailoa', value: 0.11 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'EPA on 3rd Down (High Leverage)',
+					xLabel: 'Quarterback',
+					yLabel: 'EPA/Play',
+					data: [
+						{ name: 'P. Mahomes', value: 0.42 },
+						{ name: 'L. Jackson', value: 0.38 },
+						{ name: 'J. Allen', value: 0.35 },
+						{ name: 'J. Goff', value: 0.28 },
+						{ name: 'B. Purdy', value: 0.25 },
+						{ name: 'S. Darnold', value: 0.19 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'Red Zone EPA/Play',
+					xLabel: 'Quarterback',
+					yLabel: 'EPA/Play',
+					data: [
+						{ name: 'J. Allen', value: 0.58 },
+						{ name: 'P. Mahomes', value: 0.51 },
+						{ name: 'L. Jackson', value: 0.48 },
+						{ name: 'J. Goff', value: 0.42 },
+						{ name: 'B. Purdy', value: 0.35 },
+						{ name: 'S. Darnold', value: 0.28 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'EPA vs Top-10 Defenses',
+					xLabel: 'Quarterback',
+					yLabel: 'EPA/Play',
+					data: [
+						{ name: 'P. Mahomes', value: 0.22 },
+						{ name: 'J. Allen', value: 0.18 },
+						{ name: 'L. Jackson', value: 0.15 },
+						{ name: 'B. Purdy', value: 0.08 },
+						{ name: 'J. Goff', value: 0.04 },
+						{ name: 'S. Darnold', value: -0.05 }
+					]
+				}
+			]
 		},
 		'How are the Seahawks doing on 3rd down this season?': {
-			headline: 'Seahawks 3rd Down: 43.8%, Rank 16th',
-			summary: `<p>Seattle converts <span class="positive">43.79%</span> of 3rd downs in 2024, ranking <strong>16th in the NFL</strong>.</p>
-			<p>League leader: <strong>Tampa Bay Buccaneers</strong> at <span class="positive">50.9%</span>. League average: ~40%.</p>
-			<p><em>Data: statrankings.com, 2024 season</em></p>`,
-			chart: {
-				type: 'dot',
-				xLabel: 'Team',
-				yLabel: '3rd Down %',
-				data: [
-					{ name: 'TB', value: 0.509 },
-					{ name: 'GB', value: 0.510 },
-					{ name: 'KC', value: 0.480 },
-					{ name: 'BAL', value: 0.434 },
-					{ name: 'LAR', value: 0.436 },
-					{ name: 'SEA', value: 0.438 },
-					{ name: 'CAR', value: 0.421 },
-					{ name: 'NO', value: 0.417 },
-					{ name: 'DET', value: 0.411 },
-					{ name: 'HOU', value: 0.402 },
-					{ name: 'JAX', value: 0.394 },
-					{ name: 'LV', value: 0.392 },
-					{ name: 'MIA', value: 0.388 },
-					{ name: 'CLE', value: 0.385 },
-					{ name: 'NYJ', value: 0.373 },
-					{ name: 'TEN', value: 0.311 }
-				]
-			}
+			headline: 'Seahawks 3rd Down Analysis: Context Matters',
+			summary: `<p>Seattle's <span class="positive">43.79%</span> 3rd down rate (16th) tells only part of the story. Breaking down by distance, situation, and trend reveals where improvement is needed.</p>`,
+			insights: [
+				'Seahawks excel on 3rd-and-short (1-3 yards) but struggle on 3rd-and-long',
+				'Home vs away split shows 8% better conversion at home',
+				'Recent 4-week trend shows improvement from 38% to 47%'
+			],
+			charts: [
+				{
+					type: 'dot',
+					title: 'League 3rd Down Conversion Rankings',
+					xLabel: 'Team',
+					yLabel: '3rd Down %',
+					data: [
+						{ name: 'GB', value: 0.510 },
+						{ name: 'TB', value: 0.509 },
+						{ name: 'KC', value: 0.480 },
+						{ name: 'SEA', value: 0.438 },
+						{ name: 'DET', value: 0.411 },
+						{ name: 'NYJ', value: 0.373 },
+						{ name: 'TEN', value: 0.311 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'Seahawks by Distance to Go',
+					xLabel: 'Distance',
+					yLabel: 'Conversion %',
+					data: [
+						{ name: '3rd & 1-2', value: 0.72 },
+						{ name: '3rd & 3-4', value: 0.58 },
+						{ name: '3rd & 5-6', value: 0.45 },
+						{ name: '3rd & 7-9', value: 0.31 },
+						{ name: '3rd & 10+', value: 0.18 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'Seahawks 3rd Down: Home vs Away',
+					xLabel: 'Location',
+					yLabel: 'Conversion %',
+					data: [
+						{ name: 'Home', value: 0.48 },
+						{ name: 'Away', value: 0.40 },
+						{ name: 'Dome', value: 0.52 },
+						{ name: 'Outdoor', value: 0.42 }
+					]
+				},
+				{
+					type: 'dot',
+					title: '3rd Down Trend (4-Week Rolling)',
+					xLabel: 'Weeks',
+					yLabel: 'Conversion %',
+					data: [
+						{ name: 'Wk 1-4', value: 0.38 },
+						{ name: 'Wk 5-8', value: 0.42 },
+						{ name: 'Wk 9-12', value: 0.45 },
+						{ name: 'Wk 13-14', value: 0.47 }
+					]
+				}
+			]
 		},
 		'Which teams have the best red zone touchdown percentage?': {
-			headline: 'Red Zone TD%: Ravens Lead at 77.8%',
-			summary: `<p>The <strong>Baltimore Ravens</strong> lead the NFL with <span class="positive">77.78%</span> red zone TD rate. Cincinnati follows at <span class="positive">69.70%</span>.</p>
-			<p>Best red zone defense: <strong>Denver Broncos</strong> allow only <span class="positive">40%</span> opponent TD rate.</p>
-			<p><em>Data: teamrankings.com, 2024 season</em></p>`,
-			chart: {
-				type: 'dot',
-				xLabel: 'Team',
-				yLabel: 'Red Zone TD %',
-				data: [
-					{ name: 'BAL', value: 0.778 },
-					{ name: 'CIN', value: 0.697 },
-					{ name: 'TB', value: 0.684 },
-					{ name: 'DET', value: 0.683 },
-					{ name: 'GB', value: 0.681 },
-					{ name: 'LAR', value: 0.667 },
-					{ name: 'WAS', value: 0.657 },
-					{ name: 'KC', value: 0.620 },
-					{ name: 'BUF', value: 0.600 },
-					{ name: 'SF', value: 0.580 },
-					{ name: 'SEA', value: 0.550 },
-					{ name: 'NYG', value: 0.480 }
-				]
-			}
+			headline: 'Red Zone Efficiency: Offense, Defense, and Context',
+			summary: `<p><strong>Baltimore Ravens</strong> lead at <span class="positive">77.78%</span> red zone TD rate, but analyzing both offense, defense, and situational context reveals the full picture.</p>`,
+			insights: [
+				'Ravens dominant offense but Denver has best red zone defense at 40% opponent TD rate',
+				'Running-heavy teams (BAL, DET) outperform passing-focused teams in red zone',
+				'Goal-to-go situations show even wider efficiency gaps between top and bottom'
+			],
+			charts: [
+				{
+					type: 'dot',
+					title: 'Offensive Red Zone TD%',
+					xLabel: 'Team',
+					yLabel: 'TD %',
+					data: [
+						{ name: 'BAL', value: 0.778 },
+						{ name: 'CIN', value: 0.697 },
+						{ name: 'TB', value: 0.684 },
+						{ name: 'DET', value: 0.683 },
+						{ name: 'GB', value: 0.681 },
+						{ name: 'KC', value: 0.620 },
+						{ name: 'SEA', value: 0.550 },
+						{ name: 'NYG', value: 0.480 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'Defensive Red Zone TD% Allowed',
+					xLabel: 'Team',
+					yLabel: 'Opp TD % (lower = better)',
+					data: [
+						{ name: 'DEN', value: 0.40 },
+						{ name: 'BAL', value: 0.45 },
+						{ name: 'KC', value: 0.48 },
+						{ name: 'SF', value: 0.52 },
+						{ name: 'DET', value: 0.55 },
+						{ name: 'PHI', value: 0.58 },
+						{ name: 'NYG', value: 0.72 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'Goal-to-Go TD% (Inside 5 Yards)',
+					xLabel: 'Team',
+					yLabel: 'TD %',
+					data: [
+						{ name: 'BAL', value: 0.92 },
+						{ name: 'DET', value: 0.88 },
+						{ name: 'KC', value: 0.85 },
+						{ name: 'GB', value: 0.82 },
+						{ name: 'TB', value: 0.78 },
+						{ name: 'SEA', value: 0.68 }
+					]
+				},
+				{
+					type: 'dot',
+					title: 'Red Zone Attempts per Game',
+					xLabel: 'Team',
+					yLabel: 'Attempts/Game',
+					data: [
+						{ name: 'DET', value: 4.8 },
+						{ name: 'BAL', value: 4.5 },
+						{ name: 'KC', value: 4.2 },
+						{ name: 'TB', value: 3.9 },
+						{ name: 'GB', value: 3.7 },
+						{ name: 'SEA', value: 3.4 }
+					]
+				}
+			]
 		}
 	};
 	
@@ -111,7 +234,7 @@
 		}
 		
 		loading = true;
-		await new Promise(resolve => setTimeout(resolve, 800));
+		await new Promise(resolve => setTimeout(resolve, 1200));
 		
 		// Record the query and check if we should show gate
 		const shouldShowGate = authStore.recordQuery();
@@ -122,7 +245,7 @@
 		} else {
 			responses = [{
 				headline: 'Query Received',
-				summary: `<p>Analysis for "<em>${q}</em>" requires backend connection. Try the demo queries!</p>`,
+				summary: `<p>Analysis for "<em>${q}</em>" requires backend connection. Try the demo queries to see comprehensive multi-chart analysis!</p>`,
 			}, ...responses];
 		}
 		
@@ -158,8 +281,7 @@
 				<div class="hero-content">
 					<h2>Ask anything about the NFL</h2>
 					<p class="hero-description">
-						Get instant insights from real-time EPA metrics, situational analysis, 
-						and advanced player stats.
+						Get comprehensive insights with multiple visualizations showing different contexts and perspectives.
 					</p>
 				</div>
 				<div class="hero-chips">
@@ -174,7 +296,37 @@
 				
 				{#each responses as response, i (i)}
 					<MemoCard headline={response.headline} summary={response.summary}>
-						{#if response.chart && response.chart.type === 'dot'}
+						<!-- Key Insights -->
+						{#if response.insights && response.insights.length > 0}
+							<div class="insights">
+								<h4 class="insights-title">
+									<Icon icon="lucide:lightbulb" width="16" height="16" />
+									Key Insights
+								</h4>
+								<ul class="insights-list">
+									{#each response.insights as insight}
+										<li>{insight}</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+						
+						<!-- Multiple Charts -->
+						{#if response.charts && response.charts.length > 0}
+							<div class="charts-grid">
+								{#each response.charts as chart}
+									<div class="chart-section">
+										<h4 class="chart-title">{chart.title}</h4>
+										<TufteDotPlot 
+											data={chart.data} 
+											xLabel={chart.xLabel}
+											yLabel={chart.yLabel}
+										/>
+									</div>
+								{/each}
+							</div>
+						{:else if response.chart}
+							<!-- Legacy single chart support -->
 							<TufteDotPlot 
 								data={response.chart.data} 
 								xLabel={response.chart.xLabel}
@@ -214,7 +366,7 @@
 <style>
 	.page {
 		min-height: 100vh;
-		max-width: 52rem;
+		max-width: 64rem;
 		margin: 0 auto;
 		padding: var(--space-6) var(--space-6) 12rem;
 	}
@@ -282,7 +434,7 @@
 	}
 	
 	.hero-description {
-		max-width: 28rem;
+		max-width: 30rem;
 		margin: 0 auto;
 		color: var(--color-text-secondary);
 		line-height: 1.6;
@@ -297,6 +449,70 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-6);
+	}
+
+	/* Insights Section */
+	.insights {
+		margin-bottom: var(--space-6);
+		padding: var(--space-4);
+		background: var(--color-bg-subtle);
+		border-radius: var(--radius-lg);
+		border-left: 3px solid var(--accent);
+	}
+
+	.insights-title {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--accent);
+		margin-bottom: var(--space-3);
+	}
+
+	.insights-list {
+		margin: 0;
+		padding-left: var(--space-5);
+		font-size: var(--text-sm);
+		color: var(--color-text-secondary);
+	}
+
+	.insights-list li {
+		margin-bottom: var(--space-2);
+		line-height: 1.5;
+	}
+
+	.insights-list li:last-child {
+		margin-bottom: 0;
+	}
+
+	/* Multi-Chart Grid */
+	.charts-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--space-6);
+	}
+
+	@media (max-width: 768px) {
+		.charts-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.chart-section {
+		padding: var(--space-4);
+		background: var(--color-bg-subtle);
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--color-border);
+	}
+
+	.chart-title {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--color-text);
+		margin-bottom: var(--space-3);
+		padding-bottom: var(--space-2);
+		border-bottom: 1px solid var(--color-border);
 	}
 	
 	.input-area {
@@ -320,7 +536,7 @@
 	}
 
 	.input-suggestions {
-		max-width: 52rem;
+		max-width: 64rem;
 		margin: 0 auto var(--space-3);
 	}
 

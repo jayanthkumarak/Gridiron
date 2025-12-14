@@ -7,7 +7,8 @@ export interface AnalyzeRequest {
 }
 
 export interface ChartConfig {
-	type: 'dot' | 'slope' | 'sparkline';
+	type: 'dot' | 'slope' | 'sparkline' | 'bar';
+	title: string;  // Chart title for context
 	data: Array<{ name: string; value: number; category?: string }>;
 	xLabel?: string;
 	yLabel?: string;
@@ -16,7 +17,10 @@ export interface ChartConfig {
 export interface AnalyzeResponse {
 	headline: string;
 	summary: string;
+	// Support both single chart (legacy) and multiple charts
 	chart?: ChartConfig;
+	charts?: ChartConfig[];  // Multiple charts for comprehensive analysis
+	insights?: string[];     // Key insights/takeaways
 	raw_data?: Record<string, unknown>;
 	error?: string;
 }
