@@ -1,0 +1,54 @@
+# Gridiron - Docker Compose
+# Run: docker-compose up
+
+services:
+  # R Analytics Service
+  r-service:
+    build:
+      context: ./r-service
+      dockerfile: Dockerfile
+    ports:
+      - "8787:8787"
+    volumes:
+      - r-data:/app/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8787/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s # nflfastR data takes time to load
+    restart: unless-stopped
+
+  # FastAPI Backend
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - R_SERVICE_URL=http://r-service:8787
+      - FRONTEND_URL=http://localhost:5173
+    depends_on:
+      r-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # SvelteKit Frontend (Dev)
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      - ./app/src:/app/src
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  r-data:

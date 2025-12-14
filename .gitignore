@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.svelte-kit/
+build/
+.vercel/
+.netlify/
+
+# Environment
+.env
+.env.local
+.env.*.local
+api/.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+
+# Docker
+*.log
+
+# Build outputs
+dist/
+.output/
