@@ -3,7 +3,7 @@ import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
 
 const STORAGE_KEY = 'gridiron_auth';
-const FREE_QUERY_LIMIT = 3;
+const FREE_QUERY_LIMIT = 20;  // Demo mode - set to 3 for production
 const GUEST_BONUS_QUERIES = 1;
 
 interface AuthState {

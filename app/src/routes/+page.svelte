@@ -5,18 +5,16 @@
 	import SignupModal from '$lib/components/SignupModal.svelte';
 	import TufteDotPlot from '$lib/charts/TufteDotPlot.svelte';
 	import Icon from '@iconify/svelte';
-	import { authStore } from '$lib/stores/authStore';
+	import { SignedIn, SignedOut, SignInButton, UserButton } from 'svelte-clerk';
 	import type { AnalyzeResponse } from '$lib/api/client';
 	
 	// State
 	let query = $state('');
 	let loading = $state(false);
 	let responses = $state<AnalyzeResponse[]>([]);
-	
-	// Subscribe to auth store
-	let showModal = $derived($authStore.showSignupModal);
-	let isAuthenticated = $derived($authStore.isAuthenticated);
-	let remainingQueries = $derived(authStore.remainingQueries());
+	let showModal = $state(false);
+	let queryCount = $state(0);
+	const FREE_QUERY_LIMIT = 20; // Demo mode
 	
 	// COMPREHENSIVE DEMO DATA - Multiple charts per response
 	const DEMO_RESPONSES: Record<string, AnalyzeResponse> = {
@@ -227,17 +225,17 @@
 	async function handleSubmit(q: string) {
 		if (!q.trim()) return;
 		
-		// Check if user can query
-		if (!authStore.canQuery()) {
-			authStore.showModal();
+		// Check if user can query (demo mode with 20 free queries)
+		if (queryCount >= FREE_QUERY_LIMIT) {
+			showModal = true;
 			return;
 		}
 		
 		loading = true;
 		await new Promise(resolve => setTimeout(resolve, 1200));
 		
-		// Record the query and check if we should show gate
-		const shouldShowGate = authStore.recordQuery();
+		// Increment query count
+		queryCount++;
 		
 		const demoResponse = DEMO_RESPONSES[q];
 		if (demoResponse) {
@@ -253,8 +251,8 @@
 		loading = false;
 		
 		// Show modal after query completes if limit reached
-		if (shouldShowGate) {
-			setTimeout(() => authStore.showModal(), 500);
+		if (queryCount >= FREE_QUERY_LIMIT) {
+			setTimeout(() => { showModal = true; }, 500);
 		}
 	}
 	
@@ -266,13 +264,24 @@
 
 <div class="page">
 	<header class="header">
-		<div class="logo">
-			<div class="logo-icon">
-				<Icon icon="lucide:grid-3x3" width="24" height="24" />
+		<div class="header-left">
+			<div class="logo">
+				<div class="logo-icon">
+					<Icon icon="lucide:grid-3x3" width="24" height="24" />
+				</div>
+				<h1>Gridiron</h1>
 			</div>
-			<h1>Gridiron</h1>
 		</div>
-		<p class="tagline">NFL Analytics powered by play-by-play data</p>
+		<div class="header-right">
+			<SignedOut>
+				<SignInButton mode="modal">
+					<button class="sign-in-btn">Sign In</button>
+				</SignInButton>
+			</SignedOut>
+			<SignedIn>
+				<UserButton />
+			</SignedIn>
+		</div>
 	</header>
 	
 	<main class="main">
@@ -340,12 +349,14 @@
 	</main>
 	
 	<div class="input-area">
-		{#if !isAuthenticated && remainingQueries <= 3 && remainingQueries > 0}
-			<div class="query-counter">
-				<Icon icon="lucide:sparkles" width="14" height="14" />
-				<span>{remainingQueries} free {remainingQueries === 1 ? 'query' : 'queries'} remaining</span>
-			</div>
-		{/if}
+		<SignedOut>
+			{#if FREE_QUERY_LIMIT - queryCount <= 5 && FREE_QUERY_LIMIT - queryCount > 0}
+				<div class="query-counter">
+					<Icon icon="lucide:sparkles" width="14" height="14" />
+					<span>{FREE_QUERY_LIMIT - queryCount} free queries remaining</span>
+				</div>
+			{/if}
+		</SignedOut>
 		{#if responses.length > 0}
 			<div class="input-suggestions">
 				<SuggestionChips onselect={handleSuggestionSelect} />
@@ -360,7 +371,7 @@
 </div>
 
 {#if showModal}
-	<SignupModal onclose={() => authStore.hideModal()} />
+	<SignupModal onclose={() => { showModal = false; }} />
 {/if}
 
 <style>
@@ -370,17 +381,26 @@
 	}
 	
 	.header {
-		text-align: center;
-		padding: var(--space-6) 0 var(--space-4);
-		animation: fadeIn 0.5s ease-out;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-4) 0;
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+	}
+
+	.header-right {
+		display: flex;
+		align-items: center;
 	}
 	
 	.logo {
 		display: flex;
 		align-items: center;
-		justify-content: center;
 		gap: var(--space-2);
-		margin-bottom: var(--space-1);
 	}
 
 	.logo-icon {
@@ -395,15 +415,25 @@
 	}
 	
 	.header h1 {
-		font-size: var(--text-2xl);
+		font-size: var(--text-xl);
 		font-weight: 700;
 		letter-spacing: -0.03em;
 	}
-	
-	.tagline {
-		color: var(--color-text-tertiary);
-		font-size: var(--text-xs);
-		margin: 0;
+
+	.sign-in-btn {
+		padding: var(--space-2) var(--space-4);
+		background: var(--accent);
+		color: white;
+		border: none;
+		border-radius: var(--radius-md);
+		font-size: var(--text-sm);
+		font-weight: 500;
+		cursor: pointer;
+		transition: background var(--transition-fast);
+	}
+
+	.sign-in-btn:hover {
+		background: var(--accent-soft);
 	}
 	
 	.main {
