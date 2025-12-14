@@ -2,13 +2,21 @@
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import SuggestionChips from '$lib/components/SuggestionChips.svelte';
 	import MemoCard from '$lib/components/MemoCard.svelte';
+	import SignupModal from '$lib/components/SignupModal.svelte';
 	import TufteDotPlot from '$lib/charts/TufteDotPlot.svelte';
+	import Icon from '@iconify/svelte';
+	import { authStore } from '$lib/stores/authStore';
 	import type { AnalyzeResponse } from '$lib/api/client';
 	
 	// State
 	let query = $state('');
 	let loading = $state(false);
 	let responses = $state<AnalyzeResponse[]>([]);
+	
+	// Subscribe to auth store
+	let showModal = $derived($authStore.showSignupModal);
+	let isAuthenticated = $derived($authStore.isAuthenticated);
+	let remainingQueries = $derived(authStore.remainingQueries());
 	
 	// REAL 2024 SEASON DATA (Week 14)
 	const DEMO_RESPONSES: Record<string, AnalyzeResponse> = {
@@ -96,8 +104,17 @@
 	async function handleSubmit(q: string) {
 		if (!q.trim()) return;
 		
+		// Check if user can query
+		if (!authStore.canQuery()) {
+			authStore.showModal();
+			return;
+		}
+		
 		loading = true;
-		await new Promise(resolve => setTimeout(resolve, 600));
+		await new Promise(resolve => setTimeout(resolve, 800));
+		
+		// Record the query and check if we should show gate
+		const shouldShowGate = authStore.recordQuery();
 		
 		const demoResponse = DEMO_RESPONSES[q];
 		if (demoResponse) {
@@ -105,12 +122,17 @@
 		} else {
 			responses = [{
 				headline: 'Query Received',
-				summary: `<p>Analysis for "<em>${q}</em>" requires backend connection. Try the demo queries above!</p>`,
+				summary: `<p>Analysis for "<em>${q}</em>" requires backend connection. Try the demo queries!</p>`,
 			}, ...responses];
 		}
 		
 		query = '';
 		loading = false;
+		
+		// Show modal after query completes if limit reached
+		if (shouldShowGate) {
+			setTimeout(() => authStore.showModal(), 500);
+		}
 	}
 	
 	function handleSuggestionSelect(q: string) {
@@ -121,16 +143,26 @@
 
 <div class="page">
 	<header class="header">
-		<h1>Gridiron</h1>
-		<p>NFL Analytics</p>
+		<div class="logo">
+			<div class="logo-icon">
+				<Icon icon="lucide:grid-3x3" width="24" height="24" />
+			</div>
+			<h1>Gridiron</h1>
+		</div>
+		<p class="tagline">NFL Analytics powered by play-by-play data</p>
 	</header>
 	
 	<main class="main">
 		{#if responses.length === 0 && !loading}
 			<div class="hero">
-				<h2>Ask anything about the NFL</h2>
-				<p>Powered by nflfastR play-by-play data</p>
-				<div class="hero-suggestions">
+				<div class="hero-content">
+					<h2>Ask anything about the NFL</h2>
+					<p class="hero-description">
+						Get instant insights from real-time EPA metrics, situational analysis, 
+						and advanced player stats.
+					</p>
+				</div>
+				<div class="hero-chips">
 					<SuggestionChips onselect={handleSuggestionSelect} />
 				</div>
 			</div>
@@ -156,8 +188,16 @@
 	</main>
 	
 	<div class="input-area">
+		{#if !isAuthenticated && remainingQueries <= 3 && remainingQueries > 0}
+			<div class="query-counter">
+				<Icon icon="lucide:sparkles" width="14" height="14" />
+				<span>{remainingQueries} free {remainingQueries === 1 ? 'query' : 'queries'} remaining</span>
+			</div>
+		{/if}
 		{#if responses.length > 0}
-			<SuggestionChips onselect={handleSuggestionSelect} />
+			<div class="input-suggestions">
+				<SuggestionChips onselect={handleSuggestionSelect} />
+			</div>
 		{/if}
 		<ChatInput 
 			bind:value={query} 
@@ -167,31 +207,57 @@
 	</div>
 </div>
 
+{#if showModal}
+	<SignupModal onclose={() => authStore.hideModal()} />
+{/if}
+
 <style>
 	.page {
 		min-height: 100vh;
-		max-width: 48rem;
+		max-width: 52rem;
 		margin: 0 auto;
-		padding: var(--space-6);
-		padding-bottom: 10rem;
+		padding: var(--space-6) var(--space-6) 12rem;
 	}
 	
 	.header {
 		text-align: center;
-		padding: var(--space-12) 0 var(--space-8);
+		padding: var(--space-10) 0 var(--space-6);
+		animation: fadeIn 0.5s ease-out;
+	}
+	
+	.logo {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-2);
+	}
+
+	.logo-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		background: var(--accent);
+		color: white;
+		border-radius: var(--radius-lg);
 	}
 	
 	.header h1 {
 		font-size: var(--text-3xl);
 		font-weight: 700;
 		letter-spacing: -0.03em;
-		margin-bottom: var(--space-1);
+		background: linear-gradient(135deg, var(--color-text) 0%, var(--gray-600) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 	}
 	
-	.header p {
+	.tagline {
 		color: var(--color-text-tertiary);
 		font-size: var(--text-sm);
-		margin: 0 auto;
+		margin: 0;
 	}
 	
 	.main {
@@ -200,20 +266,30 @@
 	
 	.hero {
 		text-align: center;
-		padding: var(--space-16) 0;
+		padding: var(--space-12) 0 var(--space-8);
+		animation: fadeInUp 0.6s ease-out;
+	}
+
+	.hero-content {
+		margin-bottom: var(--space-10);
 	}
 	
 	.hero h2 {
 		font-size: var(--text-2xl);
-		margin-bottom: var(--space-2);
+		font-weight: 600;
+		margin-bottom: var(--space-3);
+		color: var(--color-text);
 	}
 	
-	.hero > p {
-		margin: 0 auto var(--space-8);
+	.hero-description {
+		max-width: 28rem;
+		margin: 0 auto;
+		color: var(--color-text-secondary);
+		line-height: 1.6;
 	}
 	
-	.hero-suggestions {
-		max-width: 32rem;
+	.hero-chips {
+		max-width: 36rem;
 		margin: 0 auto;
 	}
 	
@@ -228,12 +304,33 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		padding: var(--space-4) var(--space-6) var(--space-8);
-		background: linear-gradient(to top, var(--color-bg) 70%, transparent);
+		padding: var(--space-3) var(--space-6) var(--space-6);
+		background: linear-gradient(to top, var(--color-bg) 75%, transparent);
 	}
-	
-	.input-area :global(.suggestions-container) {
-		max-width: 48rem;
+
+	.query-counter {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		font-size: var(--text-xs);
+		color: var(--accent);
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	.input-suggestions {
+		max-width: 52rem;
 		margin: 0 auto var(--space-3);
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	@keyframes fadeInUp {
+		from { opacity: 0; transform: translateY(20px); }
+		to { opacity: 1; transform: translateY(0); }
 	}
 </style>
