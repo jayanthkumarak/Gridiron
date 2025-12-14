@@ -52,31 +52,32 @@
 	.memo-card {
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-xl);
-		padding: var(--space-6);
-		box-shadow: var(--shadow-md);
-		animation: cardEnter 0.4s ease-out;
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		box-shadow: var(--shadow-sm);
+		animation: cardEnter 0.3s ease-out;
 	}
 	
 	@keyframes cardEnter {
 		from {
 			opacity: 0;
-			transform: translateY(16px) scale(0.98);
+			transform: translateY(8px);
 		}
 		to {
 			opacity: 1;
-			transform: translateY(0) scale(1);
+			transform: translateY(0);
 		}
 	}
 	
 	.memo-header {
 		display: flex;
 		align-items: flex-start;
-		gap: var(--space-3);
-		margin-bottom: var(--space-4);
-		padding-bottom: var(--space-4);
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		padding-bottom: var(--space-2);
 		border-bottom: 1px solid var(--color-border);
 	}
+
 
 	.memo-icon {
 		display: flex;
