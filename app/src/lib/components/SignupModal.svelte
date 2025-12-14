@@ -10,38 +10,42 @@
 	let email = $state('');
 	let isSubmitting = $state(false);
 
-	function handleGoogleLogin() {
-		// TODO: Implement real OAuth
-		console.log('Google login clicked');
-		// For now, mock login
-		authStore.login({
-			id: 'google-123',
-			email: 'user@gmail.com',
-			name: 'Demo User',
-			provider: 'google'
-		});
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+	async function handleGoogleLogin() {
+		try {
+			const res = await fetch(`${API_URL}/auth/google`);
+			const data = await res.json();
+			if (data.url) {
+				window.location.href = data.url;
+			}
+		} catch (error) {
+			console.error('Google login error:', error);
+		}
 	}
 
-	function handleTwitterLogin() {
-		// TODO: Implement real OAuth
-		console.log('Twitter/X login clicked');
-		authStore.login({
-			id: 'twitter-123',
-			email: 'user@twitter.com',
-			name: 'Demo User',
-			provider: 'twitter'
-		});
+	async function handleTwitterLogin() {
+		try {
+			const res = await fetch(`${API_URL}/auth/twitter`);
+			const data = await res.json();
+			if (data.url) {
+				window.location.href = data.url;
+			}
+		} catch (error) {
+			console.error('Twitter login error:', error);
+		}
 	}
 
 	async function handleEmailSubmit() {
 		if (!email.trim()) return;
 		
 		isSubmitting = true;
-		// TODO: Implement email signup
-		await new Promise(r => setTimeout(r, 1000));
+		// For email signup, we'll just log them in locally for now
+		// A real implementation would send a magic link
+		await new Promise(r => setTimeout(r, 800));
 		
 		authStore.login({
-			id: 'email-123',
+			id: `email-${Date.now()}`,
 			email: email.trim(),
 			name: email.split('@')[0],
 			provider: 'email'
