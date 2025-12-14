@@ -1,30 +1,23 @@
 # Gridiron R Analytics Service
-# Base: rocker/tidyverse with R 4.3
+FROM --platform=linux/amd64 rocker/tidyverse:4.3
 
-FROM rocker/tidyverse:4.3
-
-# Install system dependencies for nflfastR
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
+    libsodium-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install R packages
-RUN R -e "install.packages(c('plumber', 'jsonlite', 'glue'), repos='https://cloud.r-project.org/')"
+# Install ALL R packages in one command to ensure they're all present
+RUN R -e "install.packages(c('plumber', 'jsonlite', 'glue', 'nflfastR', 'nflreadr'), repos='https://cloud.r-project.org/', dependencies=TRUE)"
 
-# Install nflfastR and nflreadr (optimized data loading)
-RUN R -e "install.packages(c('nflfastR', 'nflreadr'), repos='https://cloud.r-project.org/')"
+# Verify plumber installed
+RUN R -e "library(plumber); cat('plumber OK\n')"
 
-# Create working directory
 WORKDIR /app
-
-# Copy R scripts
 COPY plumber.R .
 COPY startup.R .
 
-# Expose port
 EXPOSE 8787
-
-# Pre-load data and start Plumber
 CMD ["Rscript", "startup.R"]
